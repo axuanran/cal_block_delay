@@ -1,17 +1,19 @@
 from lxml import etree as ET
 import math
 import os
+import sys
 
-# 获取当前脚本所在的目录路径
-script_dir = os.path.dirname(os.path.abspath(__file__))
-
-# 切换到脚本所在的目录
-os.chdir(script_dir)
+# determine if application is a script file or frozen exe
+if getattr(sys, 'frozen', False):
+    script_dir = os.path.dirname(sys.executable)
+elif __file__:
+    script_dir = os.path.dirname(__file__)
 
 # 此函数读取 XML 文件并返回树对象
 def read_xml(filename):
     with open(filename, 'rb') as file:
         return ET.parse(file)
+
 
 # 此函数计算两个坐标之间的延迟
 def calculate_delay(previous_coords, current_coords, hspeed, acc):
@@ -103,7 +105,7 @@ if input("是否覆盖文件？（输入'y'或'Y'覆盖，其他情况不覆盖�
     output_file = input_file
 else:
     # 用户输入输出文件名，默认为 'modified_webCodeAll.xml'
-    output_file = input("请输入输出文件名（默认为 'modified_webCodeAll.xml'）：") or 'modified_webCodeAll.xml'
+    output_file = os.path.join(script_dir,input("请输入输出文件名（默认为 'modified_webCodeAll.xml'）：") or 'modified_webCodeAll.xml')
 
 # 将修改后的 XML 树写入到新文件
 write_xml(tree, output_file)

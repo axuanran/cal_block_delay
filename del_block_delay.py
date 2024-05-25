@@ -1,11 +1,13 @@
 from lxml import etree as ET
 import os
+import sys
 
-# 获取当前脚本所在的目录路径
-script_dir = os.path.dirname(os.path.abspath(__file__))
+# determine if application is a script file or frozen exe
+if getattr(sys, 'frozen', False):
+    script_dir = os.path.dirname(sys.executable)
+elif __file__:
+    script_dir = os.path.dirname(__file__)
 
-# 切换到脚本所在的目录
-os.chdir(script_dir)
 
 def remove_and_relocate_next_blocks(xml_document, namespace):
     """
@@ -47,7 +49,7 @@ def remove_and_relocate_next_blocks(xml_document, namespace):
 
 # Specify your XML document path and namespace
 # 用户输入原文件路径，默认为 'webCodeAll.xml'
-input_file = input("请输入原文件路径（默认为 'webCodeAll.xml'）：") or 'webCodeAll.xml'
+input_file = os.path.join(script_dir,input("请输入原文件路径（默认为 'webCodeAll.xml'）：") or 'webCodeAll.xml')
 namespace = {'ns': 'http://www.w3.org/1999/xhtml'}  # Replace with the actual namespace if different
 
 # Call the function and save the result
@@ -59,7 +61,7 @@ if input("是否覆盖文件？（输入'y'或'Y'覆盖，其他情况不覆盖�
     output_file = input_file
 else:
     # 用户输入输出文件名，默认为 'modified_webCodeAll.xml'
-    output_file = input("请输入输出文件名（默认为 'modified_webCodeAll.xml'）：") or 'modified_webCodeAll.xml'
+    output_file = os.path.join(script_dir,input("请输入输出文件名（默认为 'modified_webCodeAll.xml'）：") or 'modified_webCodeAll.xml')
 
 
 modified_tree.write(output_file, pretty_print=True, xml_declaration=False, encoding='UTF-8')

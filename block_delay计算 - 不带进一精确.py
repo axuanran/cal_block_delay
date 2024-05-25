@@ -1,12 +1,13 @@
 from lxml import etree as ET
 import math
 import os
+import sys
 
-# 获取当前脚本所在的目录路径
-script_dir = os.path.dirname(os.path.abspath(__file__))
-
-# 切换到脚本所在的目录
-os.chdir(script_dir)
+# determine if application is a script file or frozen exe
+if getattr(sys, 'frozen', False):
+    script_dir = os.path.dirname(sys.executable)
+elif __file__:
+    script_dir = os.path.dirname(__file__)
 
 # 此函数读取 XML 文件并返回树对象
 def read_xml(filename):
