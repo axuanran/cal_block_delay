@@ -78,7 +78,7 @@ def write_xml(tree, filename):
 
 
 
-def main(input_file,output_file,hspeed,acc,delay_addTime,first_coords,need_accurateTo100th):
+def main(input_file,output_file,hspeed=200,acc=400,delay_addTime=100,first_coords=None,need_accurateTo100th=False):
 
 
 
