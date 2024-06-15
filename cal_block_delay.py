@@ -142,12 +142,13 @@ if __name__ == '__main__':
     input_file = input("请输入原文件路径（默认为当前目录下的 'webCodeAll.xml'）：") or 'webCodeAll.xml'
 
     # 用户输入水平速度（VH）和加速度（AH），默认为 200 和 400
-    hspeed = input("请输入水平速度（VH），默认为 200：") or '200'
-    acc = input("请输入加速度（AH），默认为 400：") or '400'
-    delay_addTime = input("请输入延迟添加值，默认为 100：") or '100'
+    hspeed = int(input("请输入水平速度（VH），默认为 200：") or 200)
+    acc = int(input("请输入加速度（AH），默认为 400：") or 400)
+    delay_addTime = int(input("请输入延迟添加值，默认为 100：") or 100)
     first_coords=None
     if input("是否输入起飞后的第一个坐标：y or Y，其他为否").strip().lower() == 'y':
-        first_coords= (input("第一个坐标的X值（起飞后）："),input("第一个坐标的Y值（起飞后）："),input("第一个坐标的Z值（起飞后）："))
+        first_coords= (int(input("第一个坐标的X值（起飞后）：")),int(input("第一个坐标的Y值（起飞后）：")),int(input("第一个坐标的Z值（起飞后）：")))
+
     need_accurateTo100th = False
     if input("是否需要精确至百位：y or Y，其他为否").strip().lower() == 'y':
         need_accurateTo100th = True
