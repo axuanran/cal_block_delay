@@ -42,7 +42,7 @@ def read_xml(filename):
 
 
 # 此函数计算两个坐标之间的延迟
-def calculate_delay(previous_coords, current_coords, hspeed, acc):
+def calculate_delay(previous_coords, current_coords, hspeed, acc,need_accurateTo100th,delay_addTime:int):
     # 获取两个坐标点的值
     ax, ay, az = previous_coords
     bx, by, bz = current_coords
@@ -66,7 +66,7 @@ def calculate_delay(previous_coords, current_coords, hspeed, acc):
     if need_accurateTo100th:
         pre_time = math.ceil(pre_time / 100) * 100
 
-    pre_time += 100
+    pre_time += delay_addTime
 
     return pre_time
 
@@ -76,77 +76,85 @@ def write_xml(tree, filename):
         tree.write(file, pretty_print=True, xml_declaration=False, encoding='UTF-8')
 
 
-# 用户输入原文件路径，默认为 'webCodeAll.xml'
-input_file = input("请输入原文件路径（默认为当前目录下的 'webCodeAll.xml'）：") or 'webCodeAll.xml'
-
-# 用户输入水平速度（VH）和加速度（AH），默认为 200 和 400
-hspeed = input("请输入水平速度（VH），默认为 200：") or '200'
-acc = input("请输入加速度（AH），默认为 400：") or '400'
-delay_addTime = input("请输入延迟添加值，默认为 100：") or '100'
-first_coords=None
-if input("是否输入起飞后的第一个坐标：y or Y，其他为否").strip().lower() == 'y':
-    first_coords= (input("第一个坐标的X值（起飞后）："),input("第一个坐标的Y值（起飞后）："),input("第一个坐标的Z值（起飞后）："))
-need_accurateTo100th = False
-if input("是否需要精确至百位：y or Y，其他为否").strip().lower() == 'y':
-    need_accurateTo100th = True
 
 
-# 读取 XML 文件
-tree = read_xml(input_file)
-
-# 获取根节点，适应命名空间
-root = tree.getroot()
-ns = {'default_ns': root.nsmap[None]}
-
-# 找到所有的 Goertek_MoveToCoord 块
-move_to_coord_blocks = root.xpath('//default_ns:block[@type="Goertek_MoveToCoord"]', namespaces=ns)
-
-# 上一个坐标的坐标值初始化为first_coords
-previous_coords = first_coords
-
-# 遍历所有的 Goertek_MoveToCoord 块
-for block in move_to_coord_blocks:
-    # 读取当前块下的坐标值
-    current_coords = (
-        block.find('default_ns:field[@name="X"]', namespaces=ns).text,
-        block.find('default_ns:field[@name="Y"]', namespaces=ns).text,
-        block.find('default_ns:field[@name="Z"]', namespaces=ns).text
-    )
-
-    # 如果存在前一个坐标块，则计算延迟
-    if previous_coords:
-        delay = calculate_delay(previous_coords, current_coords, hspeed, acc)
-
-        # 创建 block_delay 块
-        delay_block = ET.Element('{{{}}}block'.format(ns['default_ns']), attrib={'type': 'block_delay'})
-        delay_field_time = ET.SubElement(delay_block, '{{{}}}field'.format(ns['default_ns']), attrib={'name': 'time'})
-        delay_field_time.text = str(delay)
-        delay_field_delay = ET.SubElement(delay_block, '{{{}}}field'.format(ns['default_ns']), attrib={'name': 'delay'})
-        delay_field_delay.text = '0'  # 或您计算出的正确值
-
-        # 检查当前块是否有 <next>
-        next_tag = block.find('default_ns:next', namespaces=ns)
-        if next_tag is not None:
-            next_content = next_tag.getchildren()
-            delay_next_tag = ET.SubElement(delay_block, '{{{}}}next'.format(ns['default_ns']))
-            delay_next_tag.extend(next_content)  # 转移 next 内容
-            next_tag.clear()  # 清除原有内容
-            next_tag.append(delay_block)  # 插入 block_delay
-        else:
-            # 直接创建 <next> 且不转移任何内容
-            next_tag = ET.SubElement(block, '{{{}}}next'.format(ns['default_ns']))
-            next_tag.append(delay_block)  # 插入 block_delay
-    # 更新前一个坐标值以供下次循环使用
-    previous_coords = current_coords
+def main(input_file,output_file,hspeed,acc,delay_addTime,first_coords,need_accurateTo100th):
 
 
-if input("是否覆盖文件？（输入'y'或'Y'覆盖，其他情况不覆盖）: ").strip().lower() == 'y':
-    output_file = input_file
-else:
-    # 用户输入输出文件名，默认为 'modified_webCodeAll.xml'
-    output_file = os.path.join(script_dir,input("请输入输出文件名（默认为 'modified_webCodeAll.xml'）：") or 'modified_webCodeAll.xml')
 
-# 将修改后的 XML 树写入到新文件
-write_xml(tree, output_file)
+    # 读取 XML 文件
+    tree = read_xml(input_file)
 
-print(f"The modified XML has been saved to {output_file}.")
+    # 获取根节点，适应命名空间
+    root = tree.getroot()
+    ns = {'default_ns': root.nsmap[None]}
+
+    # 找到所有的 Goertek_MoveToCoord 块
+    move_to_coord_blocks = root.xpath('//default_ns:block[@type="Goertek_MoveToCoord"]', namespaces=ns)
+
+    # 上一个坐标的坐标值初始化为first_coords
+    previous_coords = first_coords
+
+    # 遍历所有的 Goertek_MoveToCoord 块
+    for block in move_to_coord_blocks:
+        # 读取当前块下的坐标值
+        current_coords = (
+            block.find('default_ns:field[@name="X"]', namespaces=ns).text,
+            block.find('default_ns:field[@name="Y"]', namespaces=ns).text,
+            block.find('default_ns:field[@name="Z"]', namespaces=ns).text
+        )
+
+        # 如果存在前一个坐标块，则计算延迟
+        if previous_coords:
+            delay = calculate_delay(previous_coords, current_coords, hspeed, acc , need_accurateTo100th,delay_addTime)
+
+            # 创建 block_delay 块
+            delay_block = ET.Element('{{{}}}block'.format(ns['default_ns']), attrib={'type': 'block_delay'})
+            delay_field_time = ET.SubElement(delay_block, '{{{}}}field'.format(ns['default_ns']), attrib={'name': 'time'})
+            delay_field_time.text = str(delay)
+            delay_field_delay = ET.SubElement(delay_block, '{{{}}}field'.format(ns['default_ns']), attrib={'name': 'delay'})
+            delay_field_delay.text = '0'  # 或您计算出的正确值
+
+            # 检查当前块是否有 <next>
+            next_tag = block.find('default_ns:next', namespaces=ns)
+            if next_tag is not None:
+                next_content = next_tag.getchildren()
+                delay_next_tag = ET.SubElement(delay_block, '{{{}}}next'.format(ns['default_ns']))
+                delay_next_tag.extend(next_content)  # 转移 next 内容
+                next_tag.clear()  # 清除原有内容
+                next_tag.append(delay_block)  # 插入 block_delay
+            else:
+                # 直接创建 <next> 且不转移任何内容
+                next_tag = ET.SubElement(block, '{{{}}}next'.format(ns['default_ns']))
+                next_tag.append(delay_block)  # 插入 block_delay
+        # 更新前一个坐标值以供下次循环使用
+        previous_coords = current_coords
+
+
+    # 将修改后的 XML 树写入到新文件
+    write_xml(tree, output_file)
+
+    print(f"The modified XML has been saved to {output_file}.")
+
+
+if __name__ == '__main__':
+    # 用户输入原文件路径，默认为 'webCodeAll.xml'
+    input_file = input("请输入原文件路径（默认为当前目录下的 'webCodeAll.xml'）：") or 'webCodeAll.xml'
+
+    # 用户输入水平速度（VH）和加速度（AH），默认为 200 和 400
+    hspeed = input("请输入水平速度（VH），默认为 200：") or '200'
+    acc = input("请输入加速度（AH），默认为 400：") or '400'
+    delay_addTime = input("请输入延迟添加值，默认为 100：") or '100'
+    first_coords=None
+    if input("是否输入起飞后的第一个坐标：y or Y，其他为否").strip().lower() == 'y':
+        first_coords= (input("第一个坐标的X值（起飞后）："),input("第一个坐标的Y值（起飞后）："),input("第一个坐标的Z值（起飞后）："))
+    need_accurateTo100th = False
+    if input("是否需要精确至百位：y or Y，其他为否").strip().lower() == 'y':
+        need_accurateTo100th = True
+
+    if input("是否覆盖文件？（输入'y'或'Y'覆盖，其他情况不覆盖）: ").strip().lower() == 'y':
+        output_file = input_file
+    else:
+        # 用户输入输出文件名，默认为 'modified_webCodeAll.xml'
+        output_file = os.path.join(script_dir,input("请输入输出文件名（默认为 'modified_webCodeAll.xml'）：") or 'modified_webCodeAll.xml')
+    main(input_file,output_file,hspeed,acc,delay_addTime,first_coords,need_accurateTo100th)
