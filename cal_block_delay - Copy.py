@@ -2,7 +2,7 @@ from lxml import etree as ET
 import math
 import os
 import sys
-import yaml
+
 
 
 
@@ -119,6 +119,7 @@ def main(input_file,output_file,hspeed=200,acc=400,delay_addTime=100,first_coord
 
 if __name__ == '__main__':
     print("""
+！！！请注意，该版本是放在小鸟飞飞.fii文件同目录的修改版本，可以同时修改两架飞机的程序（以相同的设置项）！！！
 ***************************
 这是一个快速进行每一次移动后的延时计算的程序，专门针对于编程挑战赛，但请注意：
 - 因为会直接紧随在每一次移动之后，所以灯的变换需要 放在移动指令之前 / 在运行这个工具之后把灯放前面来 / 先别写
@@ -126,7 +127,6 @@ if __name__ == '__main__':
 - delay计算直接使用辅助计算的公式（逆向），我个人认为还算是可以用的，另外的话据说无人机不会读百位之后的延时，而且可以增加100延时增加稳定性，所以写了它
 - 多次运行会叠加多个delay，所以可以先把delay全部删掉（del_block_delay）之后再一次运行，请注意会删首个解锁后的延时（或者你自然可以多写几个start at把延时代替掉解决这个问题）
 - 已实现：输入首个坐标（无需手动计算），精确到百位，统一添加延迟
-- 20240621： 首个坐标指 X、Y：飞机在在地面的坐标；Z：起飞高度
 +++++++++
 使用说明
 1、请将该文件扔进每一个动作组文件夹（或者你想要进行block_delay计算的动作组）中
@@ -134,36 +134,25 @@ if __name__ == '__main__':
 3、根据提示运行
 ***************************
 """)
-    try:
-# 打开YAML文件并加载数据
-        with open('cal_setting.yaml', 'r') as file:
-            data = yaml.safe_load(file)
-        input_file = data['input_file']
-        output_file = data['output_file']
-        hspeed = int(data['hspeed'])
-        acc = int(data['acc'])
-        delay_addTime = int(data['delay_addTime'])
-        first_coords = tuple(data['first_coords'])
-        need_accurateTo100th = data["need_accurateTo100th"]
-    except:
-        # 用户输入原文件路径，默认为 'webCodeAll.xml'
-        input_file = input("请输入原文件路径（默认为当前目录下的 'webCodeAll.xml'）：") or 'webCodeAll.xml'
 
-        # 用户输入水平速度（VH）和加速度（AH），默认为 200 和 400
-        hspeed = int(input("请输入水平速度（VH），默认为 200：") or 200)
-        acc = int(input("请输入加速度（AH），默认为 400：") or 400)
-        delay_addTime = int(input("请输入延迟添加值，默认为 100：") or 100)
-        first_coords=None
-        if input("是否输入起飞后的第一个坐标：y or Y，其他为否").strip().lower() == 'y':
-            first_coords= (int(input("第一个坐标的X值（起飞后）：")),int(input("第一个坐标的Y值（起飞后）：")),int(input("第一个坐标的Z值（起飞后）：")))
+    # 用户输入原文件路径，默认为 'webCodeAll.xml'
+    input_file = input("请输入原文件路径（默认为当前目录下的 'webCodeAll.xml'）：") or 'webCodeAll.xml'
 
-        need_accurateTo100th = False
-        if input("是否需要精确至百位：y or Y，其他为否").strip().lower() == 'y':
-            need_accurateTo100th = True
+    # 用户输入水平速度（VH）和加速度（AH），默认为 200 和 400
+    hspeed = int(input("请输入水平速度（VH），默认为 200：") or 200)
+    acc = int(input("请输入加速度（AH），默认为 400：") or 400)
+    delay_addTime = int(input("请输入延迟添加值，默认为 100：") or 100)
+    first_coords=None
+    if input("是否输入起飞后的第一个坐标：y or Y，其他为否").strip().lower() == 'y':
+        first_coords= (int(input("第一个坐标的X值（起飞后）：")),int(input("第一个坐标的Y值（起飞后）：")),int(input("第一个坐标的Z值（起飞后）：")))
 
-        if input("是否覆盖文件？（输入'y'或'Y'覆盖，其他情况不覆盖）: ").strip().lower() == 'y':
-            output_file = input_file
-        else:
-            # 用户输入输出文件名，默认为 'modified_webCodeAll.xml'
-            output_file = os.path.join(script_dir,input("请输入输出文件名（默认为 'modified_webCodeAll.xml'）：") or 'modified_webCodeAll.xml')
+    need_accurateTo100th = False
+    if input("是否需要精确至百位：y or Y，其他为否").strip().lower() == 'y':
+        need_accurateTo100th = True
+
+    if input("是否覆盖文件？（输入'y'或'Y'覆盖，其他情况不覆盖）: ").strip().lower() == 'y':
+        output_file = input_file
+    else:
+        # 用户输入输出文件名，默认为 'modified_webCodeAll.xml'
+        output_file = os.path.join(script_dir,input("请输入输出文件名（默认为 'modified_webCodeAll.xml'）：") or 'modified_webCodeAll.xml')
     main(input_file,output_file,hspeed,acc,delay_addTime,first_coords,need_accurateTo100th)

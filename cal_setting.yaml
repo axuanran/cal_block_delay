@@ -1,0 +1,10 @@
+input_file:      # 读取文件路径
+output_file:     # 保存文件路径
+hspeed:          # 速度
+acc:             # 加速度
+delay_addTime:   # 延迟添加时间
+first_coords:    # 首个坐标
+ -               # X：飞机地面的X
+ -
+ -
+need_accurateTo100th:
